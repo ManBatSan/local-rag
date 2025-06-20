@@ -1,0 +1,15 @@
+services:
+  # data-ingest: …
+  # embeddings: …
+  # vectorstore: …
+  # model-server: …
+  api:
+    build:
+      context: api
+      # dockerfile: .
+    ports:
+      - "8000:8000"
+    # depends_on:
+    #   - embeddings
+    #   - vectorstore
+    #   - model-server
