@@ -1,15 +1,47 @@
 services:
-  # data-ingest: …
-  # embeddings: …
-  # vectorstore: …
-  # model-server: …
-  api:
-    build:
-      context: api
-      # dockerfile: .
+  data-downloader:
+    build: ./data-downloader
+    volumes:
+      - ./data/raw:/data/raw
+      - ./data-downloader:/app
+    entrypoint: "sh entrypoint.sh"
+
+
+  embeddings:
+    build: ./embeddings
+    volumes:
+      - ./data/raw:/data/raw:ro
+      - ./data/embeddings:/app/output
+      - ./embeddings:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    entrypoint: "sh entrypoint.sh"
+
+
+  vectorstore:
+    build: ./vectorstore
     ports:
-      - "8000:8000"
-    # depends_on:
-    #   - embeddings
-    #   - vectorstore
-    #   - model-server
+      - "8001:8001"
+    volumes:
+      - ./data/embeddings:/data/embeddings:ro
+      - ./data/raw:/data/raw:ro
+      - ./vectorstore:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 60s
+      start_period: 15s
+      timeout: 2s
+      retries: 5
+    entrypoint: "sh entrypoint.sh"
+
