@@ -59,14 +59,25 @@ We provide scripts to bootstrap code quality tools:
    python scripts/download_data.py --config text-corpus
    ```
 
-3. **Process and clean** the raw data in `data/processed/` (see ingestion scripts).
-4. **Docker Compose**:
+3. **Download main model**: 
+
+    You can download any model for llama_cpp or Transformers you wish to use. Good results were obtained for 16GB of VRAM using DeepSeek-R1-Distill-Qwen-14B-Q6_K_L
+
+    For ease of use, you can download this model from huggingface using the following link: [DeepSeek-R1-Distill-Qwen-14B-Q6_K_L](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-14B-Q6_K_L.gguf)
+4. **Process and clean** the raw data in `data/processed/` (see ingestion scripts).
+5. **Docker Compose**:
 
    ```bash
    docker-compose up --build
    ```
 
-5. **Access API** at `http://localhost:8000`.
+6. **Access API** Example call:
+
+   ```bash
+    curl --location 'http://localhost:8000/chat' \
+    --header 'Content-Type: application/json' \
+    --data '{"question": "What is the role of STAG1/STAG2 proteins in differentiation?"}'
+   ```
 
 ---
 
