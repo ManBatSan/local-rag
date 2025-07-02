@@ -45,3 +45,54 @@ services:
       retries: 5
     entrypoint: "sh entrypoint.sh"
 
+
+  model-server:
+    build: ./model-server
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./model-server/models/:/models/:ro
+      - ./model-server:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 60s
+      start_period: 25s
+      timeout: 5s
+      retries: 5
+    environment:
+      - USE_LLAMACPP=1
+    entrypoint: "sh entrypoint.sh"
+
+
+  api:
+    build: ./api
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./api/:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      vectorstore:
+        condition: service_healthy
+      model-server:
+        condition: service_healthy
+    environment:
+      VECTORSTORE_URL: "http://vectorstore:8001"
+      MODELSERVER_URL: "http://model-server:8002"
+      EMBED_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+      EMBED_DEVICE: "cuda"
+      TOP_K: "5"
+    entrypoint: "uvicorn api:app --host 0.0.0.0 --port 8000"

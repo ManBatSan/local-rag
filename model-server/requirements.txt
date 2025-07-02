@@ -1,0 +1,7 @@
+# para carga y quantización 4-bit
+bitsandbytes>=0.39.0
+accelerate>=0.22.0
+transformers>=4.40.0
+torch>=2.0.0
+fastapi
+uvicorn[standard]
